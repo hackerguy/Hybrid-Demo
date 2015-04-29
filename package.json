@@ -1,0 +1,14 @@
+{
+  "name": "demo",
+  "version": "0.0.0",
+  "description": "",
+  "main": "demo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rich Tarro",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "express3-handlebars": "~0.5.2"
+  }
+}
