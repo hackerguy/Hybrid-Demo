@@ -1,6 +1,9 @@
 var express = require('express');
 var app = express();
 
+var bodyParser = require('body-parser');
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 var Cloudant = require('cloudant')({account:'rich', key:'thishistakededoneentlydn',password:'8TbhuaocUNmg1ndWTBCT5h5I'});
 var db = Cloudant.use("animaldb");
 
@@ -22,6 +25,8 @@ db.get("badger", function(err, data) {
 Cloudant_data = data.wiki_page;
 });
 
+var nameparam = "MICHAEL";
+
 ibmdb.open("DRIVER={DB2};DATABASE=sample;UID=db2inst1;PWD=password;HOSTNAME=DB-Ubuntu-VirtualBox;port=50000", function(err, conn)
 {
         if(err) {
@@ -30,19 +35,34 @@ ibmdb.open("DRIVER={DB2};DATABASE=sample;UID=db2inst1;PWD=password;HOSTNAME=DB-U
                 */
                 console.error("error: ", err.message);
         } else {
-                conn.query("select FIRSTNME, LASTNAME from employee where FIRSTNME='MICHAEL'", function(err, result) {       
-                        //console.log(result[0].FIRSTNME + ' ' + result[0].LASTNAME);
-                        DB2_data = (result[0].FIRSTNME + ' ' + result[0].LASTNAME);     
-                        conn.close(function(){
-                                console.log("Connection Closed");
-                        });
+                conn.query("select FIRSTNME, LASTNAME from employee where FIRSTNME="+"\'"+nameparam+"\'", function(err, result) {
+                         DB2_data = (result[0].FIRSTNME + ' ' + result[0].LASTNAME);     
+                        //conn.close(function(){
+                                //console.log("Connection Closed");
+                        //});
                 });
         }
 });
 
-
 app.get('/', function(req, res){
-        res.render('home', { Cloudant_data: Cloudant_data, DB2_data: DB2_data });
+  res.render('home', { Cloudant_data: Cloudant_data, DB2_data: DB2_data });
+});
+
+//app.get("/form", function(req,res){
+//    res.sendFile(__dirname + '/form.html');
+//});
+
+app.get("/form", function(req,res){
+  res.render('form');
+
+});
+
+app.post('/form', urlencodedParser, function (req, res) {
+  if (!req.body) return res.sendStatus(400)
+  var username = req.body.username;
+  var password = req.body.password;
+  //res.send("Your username is: "+ username+" Your password is: "+password)
+  res.render('response', { username: username, password: password });
 });
 
 // 404 catch-all handler (middleware)
