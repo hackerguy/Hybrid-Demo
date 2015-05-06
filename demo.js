@@ -20,50 +20,38 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(express.static(__dirname + '/public'));
 
-
-db.get("badger", function(err, data) {
-Cloudant_data = data.wiki_page;
+app.get("/", function(req,res){
+  res.render('form');
 });
 
-var nameparam = "MICHAEL";
-
-ibmdb.open("DRIVER={DB2};DATABASE=sample;UID=db2inst1;PWD=password;HOSTNAME=DB-Ubuntu-VirtualBox;port=50000", function(err, conn)
-{
+app.post('/', urlencodedParser, function (req, res) {
+  	if (!req.body) return res.sendStatus(400)
+  	var firstnme = req.body.firstnme;
+  	var lastname = req.body.lastname;
+  	var cloudantsearch = "badger"
+	db.get(cloudantsearch, function(err, data) {
+		Cloudant_data = data.wiki_page;
+		console.log(Cloudant_data);
+	var fullname = firstnme+" "+lastname;
+	
+	ibmdb.open("DRIVER={DB2};DATABASE=sample;UID=db2inst1;PWD=password;HOSTNAME=DB-Ubuntu-VirtualBox;port=50000", function(err, conn)
+	{
         if(err) {
                 /*
                   On error in connection, log the error message on console
                 */
                 console.error("error: ", err.message);
         } else {
-                conn.query("select FIRSTNME, LASTNAME from employee where FIRSTNME="+"\'"+nameparam+"\'", function(err, result) {
-                         DB2_data = (result[0].FIRSTNME + ' ' + result[0].LASTNAME);     
-                        //conn.close(function(){
-                                //console.log("Connection Closed");
-                        //});
+                conn.query("select JOB from employee where FIRSTNME="+"\'"+firstnme+"\'"+" and LASTNAME="+"\'"+lastname+"\'", function(err, result) {
+                         jobresult = (result[0].JOB);     
+ console.log(jobresult);               
+ res.render('response', { name: fullname, job: jobresult, email: Cloudant_data });               
                 });
         }
+	});
+	});
 });
 
-app.get('/', function(req, res){
-  res.render('home', { Cloudant_data: Cloudant_data, DB2_data: DB2_data });
-});
-
-//app.get("/form", function(req,res){
-//    res.sendFile(__dirname + '/form.html');
-//});
-
-app.get("/form", function(req,res){
-  res.render('form');
-
-});
-
-app.post('/form', urlencodedParser, function (req, res) {
-  if (!req.body) return res.sendStatus(400)
-  var username = req.body.username;
-  var password = req.body.password;
-  //res.send("Your username is: "+ username+" Your password is: "+password)
-  res.render('response', { username: username, password: password });
-});
 
 // 404 catch-all handler (middleware)
 app.use(function(req, res, next){
