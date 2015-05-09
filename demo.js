@@ -4,8 +4,8 @@ var app = express();
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
-var Cloudant = require('cloudant')({account:'rich', key:'thishistakededoneentlydn',password:'8TbhuaocUNmg1ndWTBCT5h5I'});
-var db = Cloudant.use("animaldb");
+var Cloudant = require('cloudant')({account:'rich', key:'mallialterervanderstunds',password:'jgTSqLmYE5yoOnps0Hfdr3ed'});
+var db = Cloudant.use("employee");
 
 /*require the ibm_db module*/
 var ibmdb = require('ibm_db');
@@ -28,11 +28,14 @@ app.post('/', urlencodedParser, function (req, res) {
   	if (!req.body) return res.sendStatus(400)
   	var firstnme = req.body.firstnme;
   	var lastname = req.body.lastname;
-  	var cloudantsearch = "badger"
-	db.get(cloudantsearch, function(err, data) {
-		Cloudant_data = data.wiki_page;
-		console.log(Cloudant_data);
-	var fullname = firstnme+" "+lastname;
+  	var fullname = firstnme+" "+lastname;
+  		db.search('DesignDoc', 'lookupbyname', {q:'firstnme:'+firstnme+' AND lastname:'+lastname}, function(err, cloudant_result) {
+  			if (typeof cloudant_result.rows[0] === 'undefined') {
+                		Cloudant_email = "Name not found in Cloudant database";
+                	} else {
+                        Cloudant_email = cloudant_result.rows[0].fields.email;
+                    }
+  		console.log(Cloudant_email);
 	
 	ibmdb.open("DRIVER={DB2};DATABASE=sample;UID=db2inst1;PWD=password;HOSTNAME=DB-Ubuntu-VirtualBox;port=50000", function(err, conn)
 	{
@@ -42,10 +45,14 @@ app.post('/', urlencodedParser, function (req, res) {
                 */
                 console.error("error: ", err.message);
         } else {
-                conn.query("select JOB from employee where FIRSTNME="+"\'"+firstnme+"\'"+" and LASTNAME="+"\'"+lastname+"\'", function(err, result) {
-                         jobresult = (result[0].JOB);     
- console.log(jobresult);               
- res.render('response', { name: fullname, job: jobresult, email: Cloudant_data });               
+                conn.query("select JOB from employee where FIRSTNME="+"\'"+firstnme+"\'"+" and LASTNAME="+"\'"+lastname+"\'", function(err, db2_result) {
+                	if (typeof db2_result[0] === 'undefined') {
+                		db2_jobresult = "Name not found in DB2 database";
+                	} else {
+                        db2_jobresult = (db2_result[0].JOB);
+                    }  
+ 	console.log(db2_jobresult);               
+ res.render('response', { name: fullname, job: db2_jobresult, email: Cloudant_email });               
                 });
         }
 	});
