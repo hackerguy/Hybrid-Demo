@@ -9,6 +9,6 @@
   "author": "Rich Tarro",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "express3-handlebars": "~0.5.2"
+    "express-handlebars": "latest"
   }
 }
